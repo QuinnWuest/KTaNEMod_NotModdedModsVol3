@@ -31,7 +31,7 @@ public class NotOrientationCubeScript : MonoBehaviour
     private int _currentGrid;
     private int _currentPosition;
     private int _currentOrientation;
-    private bool[] _curGridWalls = new bool[25];
+    private readonly bool[] _curGridWalls = new bool[25];
 
     private Coroutine _rotateViewDialA;
     private Coroutine _rotateViewDialB;
@@ -139,6 +139,7 @@ public class NotOrientationCubeScript : MonoBehaviour
             MovementSels[i].AddInteractionPunch(0.5f);
             if (_moduleSolved)
                 return false;
+            Debug.LogFormat("[Not Orientation Cube #{0}] Pressed {1}.", _moduleId, new[] { "LEFT", "RIGHT", "CLOCKWISE", "COUNTERCLOCKWISE" }[i]);
             if (i == 0 || i == 1)
             {
                 int x = _currentPosition % 5;
@@ -148,14 +149,14 @@ public class NotOrientationCubeScript : MonoBehaviour
                 if (_currentOrientation == 0)
                     x = (x + (i * 2 - 1) + 5) % 5;
                 else if (_currentOrientation == 2)
-                    x = (x + (-i * 2 - 1) + 5) % 5;
+                    x = (x + (1 - i * 2) + 5) % 5;
 
                 else if (_currentOrientation == 1)
                     y = (y + (i * 2 - 1) + 5) % 5;
                 else if (_currentOrientation == 3)
-                    y = (y + (-i * 2 - 1) + 5) % 5;
+                    y = (y + (i - i * 2) + 5) % 5;
 
-                _currentPosition = ((y * 5 + x) + 25) % 25;
+                _currentPosition = y * 5 + x;
                 if (_curGridWalls[_currentPosition])
                     goto keepGoing;
 

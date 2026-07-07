@@ -62,6 +62,10 @@ public class NotChessScript : MonoBehaviour
     private readonly List<CheckerCoordinate> _finalInput = new List<CheckerCoordinate>();
     private CheckerCoordinate[] _finalAnswer = new CheckerCoordinate[2];
 
+#pragma warning disable 0649
+    private bool ZenModeActive;
+#pragma warning restore 0649
+
     private void Start()
     {
         _moduleId = _moduleIdCounter++;
@@ -624,7 +628,7 @@ public class NotChessScript : MonoBehaviour
             return;
 
         decimal allSolvedModules = BombInfo.GetSolvedModuleNames().Count(x => !_ignoredModules.Contains(x));
-        if (_moduleCount - allSolvedModules < 4)
+        if (_moduleCount - allSolvedModules < 1)
         {
             Debug.LogFormat("[Not Chess #{0}] Too few unsolved modules remain to continue the game. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
@@ -637,7 +641,7 @@ public class NotChessScript : MonoBehaviour
             _setReadyFlag = true;
             return;
         }
-        if (BombInfo.GetTime() < 180)
+        if (!ZenModeActive && BombInfo.GetTime() < 180)
         {
             Debug.LogFormat("[Not Chess #{0}] The bomb's timer has reached below three minutes. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
