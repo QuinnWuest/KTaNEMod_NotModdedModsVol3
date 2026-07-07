@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -164,18 +163,18 @@ public class NotOrientationCubeScript : MonoBehaviour
                     StopCoroutine(_rotateViewDialB);
                 _rotateViewDialB = StartCoroutine(RotateViewDialB(_currentPosition));
 
-                Debug.LogFormat("[Not Orientation Cube #{0}] Moved to {1}. Walls: {2}", _moduleId, GetPosStr(_currentPosition), GetWalls(_currentPosition).Select(b => (b + _currentOrientation) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
+                Debug.LogFormat("[Not Orientation Cube #{0}] Moved to {1}. Walls: {2}", _moduleId, GetPosStr(_currentPosition), GetWalls(_currentPosition).Select(b => (b - _currentOrientation + 4) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
                 return false;
             }
             if (i == 2 || i == 3)
             {
                 Audio.PlaySoundAtTransform("NotOrientationCubeServo", ViewDialA.transform);
-                _currentOrientation = (_currentOrientation + (i * 2 - 1)) % 4;
+                _currentOrientation = (_currentOrientation + (i * 2 - 1) + 4) % 4;
                 if (_rotateViewDialA != null)
                     StopCoroutine(_rotateViewDialA);
                 _rotateViewDialA = StartCoroutine(RotateViewDialA(_currentOrientation));
 
-                Debug.LogFormat("[Not Orientation Cube #{0}] Now facing {1}. Walls: {2}", _moduleId, _cardinals[_currentOrientation], _moduleId, GetWalls(_currentPosition).Select(b => (b + _currentOrientation) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
+                Debug.LogFormat("[Not Orientation Cube #{0}] Now facing {1}. Walls: {2}", _moduleId, _cardinals[_currentOrientation], GetWalls(_currentPosition).Select(b => (b - _currentOrientation + 4) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
                 return false;
             }
             return false;

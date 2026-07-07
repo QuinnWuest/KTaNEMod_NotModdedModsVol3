@@ -449,8 +449,8 @@ public class NotChessScript : MonoBehaviour
                 }
             case 1:
                 {
-                    // If it is in rank 4 or below and there is a black checker, file d in the rank corresponding to the number of black checkers. Otherwise, d4.
-                    coords[0] = new CheckerCoordinate(3, whitePositions[0].Y <= 4 && blackPositions.Length > 0 ? (blackPositions.Length - 1) : 3);
+                    // If it is in rank 4 or below and there is a black checker, file a in the rank corresponding to the number of black checkers. Otherwise, d4.
+                    coords[0] = new CheckerCoordinate(3, whitePositions[0].Y <= 3 && blackPositions.Length > 0 ? (blackPositions.Length - 1) : 3);
                     break;
                 }
             case 2:
@@ -487,7 +487,7 @@ public class NotChessScript : MonoBehaviour
                 {
                     // The square on which a white checker began on which has no checker on it now. If none or multiple, a1.
                     var startWCoords = _initialCheckerBoard.Pieces.Where(p => p != null && p.Color == CheckerColor.White).Select(i => i.Coordinate).ToArray();
-                    var piecesAtStartWCoords = startWCoords.Select(p => board.GetPieceAt(p)).Where(x => x == null || x.Color == CheckerColor.Black).Select(p => p.Coordinate).ToArray();
+                    var piecesAtStartWCoords = startWCoords.Where(c => { var p = board.GetPieceAt(c); return p == null || p.Color == CheckerColor.Black; }).ToArray();
                     if (piecesAtStartWCoords.Length == 1)
                         coords[0] = piecesAtStartWCoords.First();
                     else
@@ -537,7 +537,7 @@ public class NotChessScript : MonoBehaviour
                     var mostNumOfPieces = 0;
                     for (int rank = 0; rank < 6; rank++)
                     {
-                        var numPieces = board.Pieces.Count(p => p != null && p.Coordinate.Y == rank);
+                        var numPieces = board.Pieces.Count(p => p != null && p.Color == CheckerColor.Black && p.Coordinate.Y == rank);
                         if (numPieces > mostNumOfPieces)
                         {
                             mostNumOfPieces = numPieces;
@@ -626,7 +626,7 @@ public class NotChessScript : MonoBehaviour
         decimal allSolvedModules = BombInfo.GetSolvedModuleNames().Count(x => !_ignoredModules.Contains(x));
         if (_moduleCount - allSolvedModules < 4)
         {
-            Debug.LogFormat("[Not Chess #{0}] The bomb has too few solves to continue the game. The next move will end the game, and final input will be required.", _moduleId);
+            Debug.LogFormat("[Not Chess #{0}] Too few unsolved modules remain to continue the game. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
             return;
         }
