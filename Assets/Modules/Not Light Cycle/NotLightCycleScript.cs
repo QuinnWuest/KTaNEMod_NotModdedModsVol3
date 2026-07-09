@@ -108,6 +108,7 @@ public partial class NotLightCycleScript : MonoBehaviour
         SetColorblindMode(_colorblindMode);
 
         _hexGrid = GenerateHexagonGrid();
+        Debug.LogFormat("[Not Light Cycle #{0}] Initializing module.", _moduleId);
         for (int i = 0; i < _hexGrid.AppliedTetraHexes.Count; i++)
         {
             Debug.LogFormat("[Not Light Cycle #{0}] Tetrahex #{1}: {2}", _moduleId, i + 1, _hexGrid.AppliedTetraHexes[i]);
