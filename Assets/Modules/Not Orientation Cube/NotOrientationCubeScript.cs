@@ -90,11 +90,10 @@ public class NotOrientationCubeScript : MonoBehaviour
         var rs = randPos.PickRandom();
         _currentPosition = rs;
         _currentOrientation = Rnd.Range(0, 4);
-        ViewDialA.transform.localEulerAngles = new Vector3(0, _currentOrientation * 90f, 0);
 
-        Debug.LogFormat("[Not Orientation Cube #{0}] Starting position is at {1}, facing {2}. Walls: {3}", _moduleId, GetPosStr(_currentPosition), _cardinals[_currentOrientation], _moduleId, GetWalls(_currentPosition).Select(b => (b + _currentOrientation) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
+        Debug.LogFormat("[Not Orientation Cube #{0}] Starting position is at {1}, facing {2}. Walls: {3}", _moduleId, GetPosStr(_currentPosition), _cardinals[_currentOrientation], GetWalls(_currentPosition).Select(b => (b - _currentOrientation + 4) % 4).OrderBy(j => j).Select(j => _wallOrientations[j]).Join(", "));
 
-
+        _rotateViewDialA = StartCoroutine(RotateViewDialA(_currentOrientation));
         _rotateViewDialB = StartCoroutine(RotateViewDialB(_currentPosition));
     }
 
@@ -154,7 +153,7 @@ public class NotOrientationCubeScript : MonoBehaviour
                 else if (_currentOrientation == 1)
                     y = (y + (i * 2 - 1) + 5) % 5;
                 else if (_currentOrientation == 3)
-                    y = (y + (i - i * 2) + 5) % 5;
+                    y = (y + (1 - i * 2) + 5) % 5;
 
                 _currentPosition = y * 5 + x;
                 if (_curGridWalls[_currentPosition])
@@ -170,7 +169,7 @@ public class NotOrientationCubeScript : MonoBehaviour
             if (i == 2 || i == 3)
             {
                 Audio.PlaySoundAtTransform("NotOrientationCubeServo", ViewDialA.transform);
-                _currentOrientation = (_currentOrientation + (i * 2 - 1) + 4) % 4;
+                _currentOrientation = (_currentOrientation + (i * 2 + 1)) % 4;
                 if (_rotateViewDialA != null)
                     StopCoroutine(_rotateViewDialA);
                 _rotateViewDialA = StartCoroutine(RotateViewDialA(_currentOrientation));
@@ -185,7 +184,7 @@ public class NotOrientationCubeScript : MonoBehaviour
     private IEnumerator RotateViewDialA(int ori)
     {
         var rotStart = ViewDialA.transform.localEulerAngles.y;
-        var rotEnd = ori * 90f;
+        var rotEnd = ori * -90f;
 
         if (rotStart - rotEnd > 180f)
             rotEnd += 360f;
