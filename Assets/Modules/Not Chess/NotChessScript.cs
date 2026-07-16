@@ -65,6 +65,8 @@ public class NotChessScript : MonoBehaviour
     private readonly List<CheckerCoordinate> _finalInput = new List<CheckerCoordinate>();
     private CheckerCoordinate[] _finalAnswer = new CheckerCoordinate[2];
 
+    private bool _tpDidAGood;
+
 #pragma warning disable 0649
     private bool ZenModeActive;
 #pragma warning restore 0649
@@ -103,11 +105,7 @@ public class NotChessScript : MonoBehaviour
             Audio.PlaySoundAtTransform("NotChessKey", LetterSels[btn].transform);
 
             if (!_expectingInput)
-            {
-                Debug.LogFormat("[Not Chess #{0}] Pressed {1} when input was not expected. Strike.", _moduleId, "ABCDEF"[btn]);
-                Module.HandleStrike();
                 return false;
-            }
 
             if (_expectingFinalInput)
             {
@@ -209,7 +207,6 @@ public class NotChessScript : MonoBehaviour
                 return false;
 
             NumberSels[btn].AddInteractionPunch(0.5f);
-            Audio.PlaySoundAtTransform("NotChessKey", NumberSels[btn].transform);
 
             if (!_expectingInput)
             {
@@ -217,6 +214,8 @@ public class NotChessScript : MonoBehaviour
                 Module.HandleStrike();
                 return false;
             }
+
+            Audio.PlaySoundAtTransform("NotChessKey", NumberSels[btn].transform);
 
             if (_expectingFinalInput)
             {
@@ -296,7 +295,7 @@ public class NotChessScript : MonoBehaviour
                 _movesForInputtedPiece = _checkerBoard.GetMoveSequencesForPieceAt(piece.Coordinate);
 
                 Debug.LogFormat("[Not Chess #{0}] Inputted starting coordinate: {1}", _moduleId, newCoord);
-                Debug.LogFormat("[Not Chess #{0}] Possible moves: {1}", _moduleId, _movesForInputtedPiece.Select(i => i.Join(" ")).Join("; "));
+                Debug.LogFormat("[Not Chess #{0}] Possible moves: {1}", _moduleId, _movesForInputtedPiece.Select(i => "(" + i.Join(" → ") + ")").Join("; "));
             }
             else
             {
@@ -345,7 +344,7 @@ public class NotChessScript : MonoBehaviour
 
                 if (!isPartialValid)
                 {
-                    Debug.LogFormat("[Not Chess #{0}] Pressed {1}, but the move {2} to {3} is invalid. Strike.",
+                    Debug.LogFormat("[Not Chess #{0}] Pressed {1}, but the move ({2} → {3}) is invalid. Strike.",
                         _moduleId, btn,
                         _inputtedCoordinates[_inputtedCoordinates.Count - 2],
                         _inputtedCoordinates[_inputtedCoordinates.Count - 1]
@@ -358,6 +357,7 @@ public class NotChessScript : MonoBehaviour
 
                 if (isComplete)
                 {
+                    _tpDidAGood = true;
                     var newBoard = _checkerBoard.ApplyMoveSequence(_inputtedCoordinates, true);
                     _checkerBoard = newBoard;
 
@@ -412,7 +412,7 @@ public class NotChessScript : MonoBehaviour
     private void LogAllPossibleMovesForWhite(CheckerBoard board)
     {
         var moves = board.GetAllValidMoveSequences(CheckerColor.White);
-        Debug.LogFormat("[Not Chess #{0}] All possible moves for white: {1}", _moduleId, moves.Select(i => i.Join(" → ")).Join("; "));
+        Debug.LogFormat("[Not Chess #{0}] All possible moves for white: {1}", _moduleId, moves.Select(i => "(" + i.Join(" → ") + ")").Join(", "));
     }
 
     private bool TryBuildMoveFromInput(List<CheckerCoordinate> input, out List<CheckerCoordinate> moveMade, out bool isComplete)
@@ -651,22 +651,11 @@ public class NotChessScript : MonoBehaviour
             return;
         }
 
-        // fucking stupid ass royal flush timer system
-
         if (_beepReady && _timeRemaining == 42)
         {
             _beepReady = false;
             StartCoroutine(AlarmChecker());
         }
-
-        /*
-        if (_timeRemaining == 40)
-            _expectingInput = true;
-        if (_timeRemaining % 2 == 0 && _timeRemaining <= 40 && _timeRemaining > 20)
-            Audio.PlaySoundAtTransform("NotChessBeep", transform);
-        if (_timeRemaining <= 10 || (_timeRemaining <= 20 && _timeRemaining % 2 == 0))
-            Audio.PlaySoundAtTransform("NotChessAlarm", transform);
-        */
     }
 
     private IEnumerator AlarmChecker()
@@ -715,14 +704,8 @@ public class NotChessScript : MonoBehaviour
             else
                 for (int led = 0; led < 6; led++)
                     LedObjs[led].GetComponent<MeshRenderer>().material = LedMats[3];
-            /*
-            if (_timeRemaining == 40)
-                _expectingInput = true;
-            if (_timeRemaining % 2 == 0 && _timeRemaining <= 40 && _timeRemaining > 20)
-                Audio.PlaySoundAtTransform("NotChessBeep", transform);
-            if (_timeRemaining <= 10 || (_timeRemaining <= 20 && _timeRemaining % 2 == 0))
-                Audio.PlaySoundAtTransform("NotChessAlarm", transform);
-            */
+            if (_timeRemaining <= 41)
+            _expectingInput = true;
             yield return new WaitForSeconds(1f);
             Audio.PlaySoundAtTransform("NotChessTick", transform);
         }
@@ -763,6 +746,7 @@ public class NotChessScript : MonoBehaviour
             yield return new WaitForSeconds(0.065f);
         }
         _beepReady = true;
+        _tpDidAGood = false;
         for (int i = 0; i < 6; i++)
             LedObjs[i].GetComponent<MeshRenderer>().material = LedMats[0];
         _countdownTimer = StartCoroutine(CountdownTimer());
@@ -822,12 +806,42 @@ public class NotChessScript : MonoBehaviour
     }
 
 #pragma warning disable 0414
-    private string TwitchHelpMessage = @"Help message";
+    private string TwitchHelpMessage = @"!{0} execute a1 b2 [Press buttons A, 1, B, and 2.]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        yield break;
+        command = command.Trim().ToLowerInvariant();
+        var m = Regex.Match(command, @"^\s*((execute|press|submit)\s+)?(?<btns>[a-f1-6,; ]+)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (!m.Success)
+            yield break;
+        var btns = m.Groups["btns"].Value;
+        var list = new List<KMSelectable>();
+        foreach (var btn in btns)
+        {
+            int ix = "abcdef123456,; ".IndexOf(btn);
+            if (ix == -1)
+                yield break;
+            if (ix >= 0 && ix <= 5)
+                list.Add(LetterSels[ix % 6]);
+            else if (ix >= 6 && ix <= 11)
+                list.Add(NumberSels[ix % 6]);
+        }
+        if (!_expectingInput)
+        {
+            yield return "sendtochaterror Input is not expected!";
+            yield break;
+        }
+        yield return null;
+        yield return "solve";
+        yield return "strike";
+        foreach (var btn in list)
+        {
+            btn.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+        if (_tpDidAGood)
+            yield return "awardpoints 1";
     }
 
     private void TwitchHandleForcedSolve()

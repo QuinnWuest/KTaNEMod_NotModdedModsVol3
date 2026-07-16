@@ -53,6 +53,7 @@ public partial class NotLightCycleScript : MonoBehaviour
     private List<HexColor> _solutionHexColors = new List<HexColor>();
     private readonly List<HexColor> _inputtedHexColors = new List<HexColor>();
 
+    private List<HexColor> _presetColors = new List<HexColor>();
     private static readonly HexColor[] _rgb = new HexColor[] { HexColor.Red, HexColor.Green, HexColor.Blue };
     private bool _goBackwards;
 
@@ -96,6 +97,9 @@ public partial class NotLightCycleScript : MonoBehaviour
 
         _colorblindMode = ColorblindMode.ColorblindModeActive;
         _lightColors = Enumerable.Range(0, 6).ToArray().Shuffle().Select(i => (HexColor)i).ToArray();
+        for (int i = 0; i < 2; i++)
+            _presetColors.AddRange(_lightColors);
+        _presetColors.Shuffle();
         for (int i = 0; i < 6; i++)
         {
             ColoredLightObjs[i].GetComponent<MeshRenderer>().material = ColoredLightOffMats[(int)_lightColors[i]];

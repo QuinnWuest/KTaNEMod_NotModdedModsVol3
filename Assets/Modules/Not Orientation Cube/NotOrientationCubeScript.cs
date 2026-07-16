@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -320,7 +321,49 @@ public class NotOrientationCubeScript : MonoBehaviour
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        yield break;
+        var m = Regex.Match(
+        command, @"^\s*(?:(?:press|submit)\s+)?(?<btn>(?:l|left|r|right|c|cw|clockwise|w|ccw|counterclockwise|widdershins|s|set))(?:\s+(?<btn>(?:l|left|r|right|c|cw|clockwise|w|ccw|counterclockwise|widdershins|s|set)))*\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        if (!m.Success)
+            yield break;
+
+        yield return null;
+        var list = new List<KMSelectable>();
+        foreach (Capture g in m.Groups["btn"].Captures)
+        {
+            var b = g.Value.ToLowerInvariant();
+            switch (b)
+            {
+                case "l":
+                case "left":
+                    list.Add(MovementSels[0]);
+                    break;
+                case "r":
+                case "right":
+                    list.Add(MovementSels[1]);
+                    break;
+                case "c":
+                case "cw":
+                case "clockwise":
+                    list.Add(MovementSels[2]);
+                    break;
+                case "w":
+                case "ccw":
+                case "counterclockwise":
+                case "widdershins":
+                    list.Add(MovementSels[3]);
+                    break;
+                case "s":
+                case "set":
+                    list.Add(SetSel);
+                    break;
+            }
+        }
+        foreach (var btn in list)
+        {
+            btn.OnInteract();
+            yield return new WaitForSeconds(0.2f);
+        }
     }
 
     private IEnumerator TwitchHandleForcedSolve()
