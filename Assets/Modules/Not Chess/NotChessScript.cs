@@ -56,6 +56,9 @@ public class NotChessScript : MonoBehaviour
     private int? _inputtedLetter;
     private int? _inputtedNumber;
 
+    private int _timeRemaining;
+    private bool _beepReady = true;
+
     private readonly List<CheckerCoordinate> _inputtedCoordinates = new List<CheckerCoordinate>();
     private List<CheckerCoordinate> _blacksLastMoves = new List<CheckerCoordinate>();
     private List<List<CheckerCoordinate>> _movesForInputtedPiece = new List<List<CheckerCoordinate>>();
@@ -86,7 +89,7 @@ public class NotChessScript : MonoBehaviour
             _ignoredModules = Boss.GetIgnoredModules("Not Chess", new string[] { "Not Chess" });
         _moduleCount = BombInfo.GetSolvableModuleNames().Count(x => !_ignoredModules.Contains(x));
         _activated = true;
-        StartCoroutine(ResetCountdown());
+        _countdownTimer = StartCoroutine(CountdownTimer());
     }
 
     private KMSelectable.OnInteractHandler LetterPress(int btn)
@@ -647,20 +650,56 @@ public class NotChessScript : MonoBehaviour
             _setReadyFlag = true;
             return;
         }
+
+        // fucking stupid ass royal flush timer system
+
+        if (_beepReady && _timeRemaining == 42)
+        {
+            _beepReady = false;
+            StartCoroutine(AlarmChecker());
+        }
+
+        /*
+        if (_timeRemaining == 40)
+            _expectingInput = true;
+        if (_timeRemaining % 2 == 0 && _timeRemaining <= 40 && _timeRemaining > 20)
+            Audio.PlaySoundAtTransform("NotChessBeep", transform);
+        if (_timeRemaining <= 10 || (_timeRemaining <= 20 && _timeRemaining % 2 == 0))
+            Audio.PlaySoundAtTransform("NotChessAlarm", transform);
+        */
+    }
+
+    private IEnumerator AlarmChecker()
+    {
+        while (_timeRemaining <= 42 && _timeRemaining >= 23)
+        {
+            yield return new WaitForSeconds(1.8f);
+            Audio.PlaySoundAtTransform("NotChessBeep", transform);
+        }
+        while (_timeRemaining <= 22 && _timeRemaining >= 12)
+        {
+            yield return new WaitForSeconds(1.8f);
+            Audio.PlaySoundAtTransform("NotChessAlarm", transform);
+        }
+        while (_timeRemaining <= 11 && _timeRemaining >= 1)
+        {
+            yield return new WaitForSeconds(0.9f);
+            Audio.PlaySoundAtTransform("NotChessAlarm", transform);
+        }
     }
 
     private IEnumerator CountdownTimer()
     {
-        for (int time = _timerStart; time >= 0; time--)
+        for (_timeRemaining = _timerStart; _timeRemaining >= 0; _timeRemaining--)
         {
-            DisplayText.text = string.Format("{0}-{1}", "abcdefghijk"[time / 10], time % 10);
+            DisplayText.text = string.Format("{0}-{1}", "abcdefghijk"[_timeRemaining / 10], _timeRemaining % 10);
             if (!_expectingFinalInput)
             {
                 var cols = _blacksLastMoves.Select(i => (int?)i.X).ToList();
                 var rows = _blacksLastMoves.Select(i => (int?)i.Y).ToList();
                 cols.Add(null);
                 rows.Add(null);
-                int blacksMoveIx = (108 - time) % cols.Count;
+                int blacksMoveIx = (108 - _timeRemaining) % cols.Count;
                 var blacksMoveCol = cols[blacksMoveIx];
                 var blacksMoveRow = rows[blacksMoveIx];
 
@@ -676,15 +715,16 @@ public class NotChessScript : MonoBehaviour
             else
                 for (int led = 0; led < 6; led++)
                     LedObjs[led].GetComponent<MeshRenderer>().material = LedMats[3];
-            if (time == 40)
+            /*
+            if (_timeRemaining == 40)
                 _expectingInput = true;
-            if (time % 2 == 0 && time <= 40 && time > 20)
+            if (_timeRemaining % 2 == 0 && _timeRemaining <= 40 && _timeRemaining > 20)
                 Audio.PlaySoundAtTransform("NotChessBeep", transform);
-            if (time <= 10 || (time <= 20 && time % 2 == 0))
+            if (_timeRemaining <= 10 || (_timeRemaining <= 20 && _timeRemaining % 2 == 0))
                 Audio.PlaySoundAtTransform("NotChessAlarm", transform);
-            yield return new WaitForSeconds(0.9f);
+            */
+            yield return new WaitForSeconds(1f);
             Audio.PlaySoundAtTransform("NotChessTick", transform);
-            yield return new WaitForSeconds(0.1f);
         }
         _lockModule = true;
         Debug.LogFormat("[Not Chess #{0}] Ran out of time. Strike.", _moduleId);
@@ -722,6 +762,7 @@ public class NotChessScript : MonoBehaviour
             }
             yield return new WaitForSeconds(0.065f);
         }
+        _beepReady = true;
         for (int i = 0; i < 6; i++)
             LedObjs[i].GetComponent<MeshRenderer>().material = LedMats[0];
         _countdownTimer = StartCoroutine(CountdownTimer());
@@ -732,7 +773,7 @@ public class NotChessScript : MonoBehaviour
         if (_countdownTimer != null)
             StopCoroutine(_countdownTimer);
         Audio.PlaySoundAtTransform("NotChessSystemFailure", transform);
-        for (int i = 0; i < 168; i++)
+        for (int i = 0; i < 126; i++)
         {
             string randStr = "abcdefghijk0123456789-";
             string strA = randStr[Rnd.Range(0, randStr.Length)].ToString();
@@ -744,7 +785,7 @@ public class NotChessScript : MonoBehaviour
                     LedObjs[led].GetComponent<MeshRenderer>().material = LedMats[2];
                 else
                     LedObjs[led].GetComponent<MeshRenderer>().material = LedMats[0];
-            yield return new WaitForSeconds(0.065f);
+            yield return new WaitForSeconds(0.07f);
         }
         Module.HandleStrike();
         _countdownTimer = StartCoroutine(CountdownTimer());
