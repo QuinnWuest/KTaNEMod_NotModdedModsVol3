@@ -98,14 +98,12 @@ public class NotChessScript : MonoBehaviour
     {
         return delegate ()
         {
+            LetterSels[btn].AddInteractionPunch(0.5f);
             if (_moduleSolved || !_activated || _lockModule)
                 return false;
-
-            LetterSels[btn].AddInteractionPunch(0.5f);
-            Audio.PlaySoundAtTransform("NotChessKey", LetterSels[btn].transform);
-
             if (!_expectingInput)
                 return false;
+            Audio.PlaySoundAtTransform("NotChessKey", LetterSels[btn].transform);
 
             if (_expectingFinalInput)
             {
@@ -203,18 +201,11 @@ public class NotChessScript : MonoBehaviour
     {
         return delegate ()
         {
+            NumberSels[btn].AddInteractionPunch(0.5f);
             if (_moduleSolved || !_activated || _lockModule)
                 return false;
-
-            NumberSels[btn].AddInteractionPunch(0.5f);
-
             if (!_expectingInput)
-            {
-                Debug.LogFormat("[Not Chess #{0}] Pressed {1} when input was not expected. Strike.", _moduleId, btn + 1);
-                Module.HandleStrike();
                 return false;
-            }
-
             Audio.PlaySoundAtTransform("NotChessKey", NumberSels[btn].transform);
 
             if (_expectingFinalInput)
