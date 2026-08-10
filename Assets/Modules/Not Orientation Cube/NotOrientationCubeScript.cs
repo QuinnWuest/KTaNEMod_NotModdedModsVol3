@@ -316,7 +316,7 @@ public class NotOrientationCubeScript : MonoBehaviour
     }
 
 #pragma warning disable 0414
-    private string TwitchHelpMessage = "";
+    private string TwitchHelpMessage = "!{0} press left right clockwise counterclockwise set [Press any of the buttons.] | \"Press\" is optional. | Buttons can be abbreviated to their one-letter forms. (L, R, C, W, S)";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)

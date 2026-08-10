@@ -780,7 +780,7 @@ public partial class NotLightCycleScript : MonoBehaviour
     }
 
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = "";
+    private readonly string TwitchHelpMessage = "!{0} next [Tap the button to view the next sequence.] | !{0} submit red green blue [Submit a sequence of colors.]";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)

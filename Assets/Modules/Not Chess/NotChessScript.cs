@@ -621,6 +621,12 @@ public class NotChessScript : MonoBehaviour
         if (_moduleSolved || _expectingFinalInput || _setReadyFlag || _lockModule || !_activated)
             return;
 
+        if (_beepReady && _timeRemaining == 42)
+        {
+            _beepReady = false;
+            StartCoroutine(AlarmChecker());
+        }
+
         decimal allSolvedModules = BombInfo.GetSolvedModuleNames().Count(x => !_ignoredModules.Contains(x));
         if (_moduleCount - allSolvedModules < 1)
         {
@@ -640,12 +646,6 @@ public class NotChessScript : MonoBehaviour
             Debug.LogFormat("[Not Chess #{0}] The bomb's timer has reached below three minutes. The next move will end the game, and final input will be required.", _moduleId);
             _setReadyFlag = true;
             return;
-        }
-
-        if (_beepReady && _timeRemaining == 42)
-        {
-            _beepReady = false;
-            StartCoroutine(AlarmChecker());
         }
     }
 
