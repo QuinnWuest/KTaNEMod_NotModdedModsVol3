@@ -485,7 +485,7 @@ public partial class NotLightCycleScript : MonoBehaviour
 
         if (best.Count > 1)
         {
-            var preferredFirstDir = DirectionTowardFinish(hg, startHex, endHex, distFromEnd);
+            var preferredFirstDir = DirectionTowardFinish(startHex, endHex);
             best.Sort((a, b) => CompareByDivergenceRule(a, b, preferredFirstDir));
         }
 
@@ -609,20 +609,14 @@ public partial class NotLightCycleScript : MonoBehaviour
         return d;
     }
 
-    private int DirectionTowardFinish(HexGrid hg, Hex start, Hex goal, Dictionary<Hex, int> distFromEnd)
+    private int DirectionTowardFinish(Hex start, Hex goal)
     {
         int bestDir = 0;
         int bestDist = int.MaxValue;
 
         for (int dir = 0; dir < 6; dir++)
         {
-            var nx = start.GetNeighbor(dir);
-            if (!ExistsInHexGrid(hg, nx))
-                continue;
-            if (!distFromEnd.ContainsKey(nx))
-                continue;
-
-            int d = distFromEnd[nx];
+            int d = (start.GetNeighbor(dir) - goal).Distance;
             if (d < bestDist)
             {
                 bestDist = d;
