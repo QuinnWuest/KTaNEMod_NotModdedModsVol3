@@ -39,7 +39,10 @@ MonoBehaviour:
     PDF[/url]\r\n- Quadruple Simpleton't\r\n (originally modeled by BigCrunch22)\r\n[url=https://ktane.timwi.de/HTML/Quadruple%20Simpleton%27t.html]Manual
     HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Quadruple%20Simpleton%27t.pdf]Manual
     PDF[/url]\r\n- Recolour Flash\r\n (originally modeled by Bashly)\r\n[url=https://ktane.timwi.de/HTML/Recolour%20Flash.html]Manual
-    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Recolour%20Flash.pdf]Manual PDF[/url]"
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Recolour%20Flash.pdf]Manual PDF[/url]\r\n-
+    Technicolored Squares\r\n (originally modeled by Timwi)\r\n[url=https://ktane.timwi.de/HTML/Technicolored%20Squares.html]Manual
+    HTML[/url]\r\n[url=https://ktane.timwi.de/PDF/Technicolored%20Squares.pdf]Manual
+    PDF[/url]"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 76105a0f84dcf2141a8bc2ca4cc792b7, type: 3}
