@@ -3617,7 +3617,15 @@ MonoBehaviour:
   - {fileID: 10278486}
   - {fileID: 10204020}
   - {fileID: 10217164}
-  ButtonSels: []
+  ButtonSels:
+  - {fileID: 11411106}
+  - {fileID: 11478750}
+  - {fileID: 11459968}
+  - {fileID: 11460278}
+  - {fileID: 11465880}
+  - {fileID: 11460550}
+  - {fileID: 11407036}
+  - {fileID: 11461564}
   ButtonLEDs:
   - {fileID: 166376}
   - {fileID: 118568}
