@@ -545,6 +545,7 @@ GameObject:
   - component: {fileID: 11466558}
   - component: {fileID: 11445096}
   - component: {fileID: 114566824178570740}
+  - component: {fileID: 114069548294838232}
   m_Layer: 0
   m_Name: Not Round Keypad
   m_TagString: Untagged
@@ -3502,6 +3503,18 @@ MonoBehaviour:
   m_Script: {fileID: 2144496390, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114069548294838232
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 186308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf69c2de51bd3c43bbd9bc22578ee08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _seed: 1
 --- !u!114 &114091248041167598
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3594,6 +3607,7 @@ MonoBehaviour:
   Module: {fileID: 11413066}
   BombInfo: {fileID: 114025087313300920}
   Audio: {fileID: 11466558}
+  RuleSeedable: {fileID: 114069548294838232}
   ButtonTexts:
   - {fileID: 10209828}
   - {fileID: 10250352}
@@ -3603,6 +3617,20 @@ MonoBehaviour:
   - {fileID: 10278486}
   - {fileID: 10204020}
   - {fileID: 10217164}
+  ButtonSels: []
+  ButtonLEDs:
+  - {fileID: 166376}
+  - {fileID: 118568}
+  - {fileID: 146918}
+  - {fileID: 165866}
+  - {fileID: 141516}
+  - {fileID: 150028}
+  - {fileID: 105892}
+  - {fileID: 199476}
+  ButtonLEDMats:
+  - {fileID: 2100000, guid: f7c4c7f434a4bd948951f90c22a70bc3, type: 2}
+  - {fileID: 2100000, guid: b7dc2d246eafa8c4e8018e6aa24d6600, type: 2}
+  - {fileID: 2100000, guid: db4a430d4bb32564f8558176350131dc, type: 2}
 --- !u!114 &114630671957337240
 MonoBehaviour:
   m_ObjectHideFlags: 1

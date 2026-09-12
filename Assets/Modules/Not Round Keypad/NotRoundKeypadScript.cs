@@ -15,6 +15,8 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
     public TextMesh[] ButtonTexts;
     public KMSelectable[] ButtonSels;
+    public GameObject[] ButtonLEDs;
+    public Material[] ButtonLEDMats;
 
     private int _moduleId;
     private static int _moduleIdCounter = 1;
@@ -97,6 +99,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     {
         new int[] { 0, 1, 6 }, new int[] { 0, 2, 5 }, new int[] { 0, 1, 5 }, new int[] { 0, 1, 2 }, new int[] { 0, 1, 4 }, new int[] { 0, 2, 4 }, new int[] { 0, 1, 3 }
     };
+    private string _allLetters;
     
     private Position[] _positions;
     private Position[] _randomizedPositions;
@@ -136,7 +139,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         int _chosenIndex = Rnd.Range(0, 208);
         string _chosenWord = _shuffledBank[_chosenIndex];
         
-        string _allLetters = ObtainAllLetters(_chosenWord, _buttonsNotPartOfSet, _buttonsPartOfSet);
+        _allLetters = ObtainAllLetters(_chosenWord, _buttonsNotPartOfSet, _buttonsPartOfSet);
         _northButton = Rnd.Range(1, 8);
         var _initSet = _initialSets[_northButton - 1];
         int _rotate = _chosenIndex % 8;
@@ -168,7 +171,10 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             if (_moduleSolved)
                 return;
 
-            // do code here
+            var sem = _semaphore[_alphabet.IndexOf(_allLetters[i])];
+            var rot = new int[] { (sem[0] + _northButton) % 8, (sem[1] + _northButton) % 8 };
+            ButtonLEDs[rot[0]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
+            ButtonLEDs[rot[1]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
         };
     }
 
@@ -179,7 +185,10 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             if (_moduleSolved)
                 return;
 
-            // do code here
+            for (int b = 0; b < 8; b++)
+            {
+                ButtonLEDs[b].GetComponent<MeshRenderer>().material = ButtonLEDMats[0];
+            }
         };
     }
 
