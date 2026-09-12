@@ -159,6 +159,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         }
         Debug.LogFormat("[Not Round Keypad #{0}] The SET symbols are: {1}, {2}, {3}", _moduleId, _buttonChars[_buttonsPartOfSet[0]], _buttonChars[_buttonsPartOfSet[1]], _buttonChars[_buttonsPartOfSet[2]]);
         Debug.LogFormat("[Not Round Keypad #{0}] The non-SET buttons, when read with {1} at the top, spell out '{2}'", _moduleId, _DIRECTIONS[_northButton], _chosenWord);
+        Debug.LogFormat("<Not Round Keypad #{0}> All letters: {1}", _moduleId, _allLetters);
 
         var _initSet = _initialSets[_northButton - 1];
         Debug.LogFormat("[Not Round Keypad #{0}] The initial button set is {1}, {2}, {3}", _moduleId, _DIRECTIONS[_initSet[0]], _DIRECTIONS[_initSet[1]], _DIRECTIONS[_initSet[2]]);
