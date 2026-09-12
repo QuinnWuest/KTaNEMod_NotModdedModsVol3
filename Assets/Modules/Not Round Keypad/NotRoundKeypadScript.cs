@@ -83,10 +83,11 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         "waver", "wheel", "where", "which", "white", "whore", "whorl", "whose", "winch", "witch", "wolds", "words", "wordy",
         "world", "would", "wound", "wrist", "write", "writs", "wrote", "yearn"
     };
-    private readonly string _alphabet = "abcdefghijklmnopqrstuvwxyz";
+    private readonly string _ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+    private readonly string[] _DIRECTIONS = new string[] { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
     private int _northButton;
 
-    private readonly int[][] _semaphore =
+    private readonly int[][] _SEMAPHORE =
     {
         new int[] { 4, 5 }, new int[] { 4, 6 }, new int[] { 4, 7 }, new int[] { 0, 4 }, new int[] { 1, 4 }, 
         new int[] { 2, 4 }, new int[] { 3, 4 }, new int[] { 5, 6 }, new int[] { 5, 7 }, new int[] { 0, 2 }, 
@@ -94,12 +95,19 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         new int[] { 0, 6 }, new int[] { 1, 6 }, new int[] { 2, 6 }, new int[] { 3, 6 }, new int[] { 0, 7 }, 
         new int[] { 1, 7 }, new int[] { 0, 3 }, new int[] { 1, 2 }, new int[] { 1, 3 }, new int[] { 2, 7 }, new int[] { 2, 3 }
     };
+    private readonly int[] _SEMAPHORE_DISTANCES =
+    {
+        1, 2, 3, 4, 3, 2, 1, 1, 2, 2, 3, 4, 3, 2, 1, 2, 3, 4, 3, 1, 2, 3, 1, 2, 3, 1
+    };
 
     private readonly int[][] _initialSets =
     {
         new int[] { 0, 1, 6 }, new int[] { 0, 2, 5 }, new int[] { 0, 1, 5 }, new int[] { 0, 1, 2 }, new int[] { 0, 1, 4 }, new int[] { 0, 2, 4 }, new int[] { 0, 1, 3 }
     };
     private string _allLetters;
+    private int[][] _ledPairs = { 
+        new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }, new int[] { -1, -1 }
+    };
     
     private Position[] _positions;
     private Position[] _randomizedPositions;
@@ -112,6 +120,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
     private void Start()
     {
+        //more general TODO: apparently underscores everywhere doesn't quite emulate your coding style Quinn, fix how you see fit
         _moduleId = _moduleIdCounter++;
 
         for (int i = 0; i < ButtonSels.Length; i++)
@@ -123,6 +132,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
         var ruleseed = RuleSeedable.GetRNG();
 
+        //TODO: have the positions be like it was before 0) x-slice 1) y-slice 2) z-slice 3) whole cube; make a 2-slice set impossible. and provide slice type for submit button at the end.
         _positions = GeneratePositions();
         _randomizedPositions = _positions.ToArray().Shuffle();
         _buttonChars = _randomizedPositions.Select(i => _keypadSymbols[i]).ToArray();
@@ -141,12 +151,39 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         
         _allLetters = ObtainAllLetters(_chosenWord, _buttonsNotPartOfSet, _buttonsPartOfSet);
         _northButton = Rnd.Range(1, 8);
+        for (int b = 0; b < 8; b++)
+        {
+            var sem = _SEMAPHORE[_ALPHABET.IndexOf(_allLetters[b])];
+            _ledPairs[b] = new int[] { (sem[0] + _northButton) % 8, (sem[1] + _northButton) % 8 };
+            Debug.LogFormat("[Not Round Keypad #{0}] ♦ The {1} button's LEDs: {2}, {3}", _moduleId, _DIRECTIONS[b], _DIRECTIONS[_ledPairs[b][0]], _DIRECTIONS[_ledPairs[b][1]]);
+        }
+        Debug.LogFormat("[Not Round Keypad #{0}] The SET symbols are: {1}, {2}, {3}", _moduleId, _buttonChars[_buttonsPartOfSet[0]], _buttonChars[_buttonsPartOfSet[1]], _buttonChars[_buttonsPartOfSet[2]]);
+        Debug.LogFormat("[Not Round Keypad #{0}] The non-SET buttons, when read with {1} at the top, spell out '{2}'", _moduleId, _DIRECTIONS[_northButton], _chosenWord);
+
         var _initSet = _initialSets[_northButton - 1];
+        Debug.LogFormat("[Not Round Keypad #{0}] The initial button set is {1}, {2}, {3}", _moduleId, _DIRECTIONS[_initSet[0]], _DIRECTIONS[_initSet[1]], _DIRECTIONS[_initSet[2]]);
         int _rotate = _chosenIndex % 8;
         int _startingSymbol = _chosenIndex / 8;
+        Debug.LogFormat("[Not Round Keypad #{0}] The starting symbol is {1}", _moduleId, _charList[_startingSymbol]);
         var _finalSet = new int[] { (_initSet[0] + _rotate) % 8, (_initSet[1] + _rotate) % 8, (_initSet[2] + _rotate) % 8 };
+        Debug.LogFormat("[Not Round Keypad #{0}] The final button set is {1}, {2}, {3}", _moduleId, _DIRECTIONS[_finalSet[0]], _DIRECTIONS[_finalSet[1]], _DIRECTIONS[_finalSet[2]]);
     
-        
+        var _distinctLights = new List<int>();
+        for (int f = 0; f < 3; f++)
+        {
+            var pair = _ledPairs[_finalSet[f]];
+            for (int p = 0; p < 2; p++)
+                if (!_distinctLights.Contains(pair[p]))
+                    _distinctLights.Add(pair[p]);
+        }
+        int _distinctTotal = _distinctLights.Count() - (_distinctLights.Contains(_northButton) ? 1 : 0);
+        Debug.LogFormat("[Not Round Keypad #{0}] The number of distinct light positions from the final set, ignoring the north button, is {1}", _moduleId, _distinctTotal);
+        var _distances = _finalSet.Select(z => _SEMAPHORE_DISTANCES[_ALPHABET.IndexOf(_allLetters[z])]).ToArray();
+        Array.Sort(_distances);
+        int _medianDistance = _distances[1];
+        Debug.LogFormat("[Not Round Keypad #{0}] The median distance between lights from the final set is {1}", _moduleId, _medianDistance);
+        Debug.LogFormat("<Not Round Keypad #{0}> All distances: {1}", _moduleId, _distances.Join());
+        //TODO: 3D Tunnels movement !!
     }
 
     private KMSelectable.OnInteractHandler ButtonPress(int i)
@@ -171,10 +208,8 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             if (_moduleSolved)
                 return;
 
-            var sem = _semaphore[_alphabet.IndexOf(_allLetters[i])];
-            var rot = new int[] { (sem[0] + _northButton) % 8, (sem[1] + _northButton) % 8 };
-            ButtonLEDs[rot[0]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
-            ButtonLEDs[rot[1]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
+            ButtonLEDs[_ledPairs[i][0]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
+            ButtonLEDs[_ledPairs[i][1]].GetComponent<MeshRenderer>().material = ButtonLEDMats[1];
         };
     }
 
@@ -186,9 +221,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                 return;
 
             for (int b = 0; b < 8; b++)
-            {
                 ButtonLEDs[b].GetComponent<MeshRenderer>().material = ButtonLEDMats[0];
-            }
         };
     }
 
@@ -196,9 +229,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     {
         char[] chars = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
         for (int i = 0; i < 5; i++)
-        {
             chars[n[i]] = w[i];
-        }
 
         //how not to code
         //string[] fours = { "", "", "", "", "" }; for (int a = 0; a < 5; a++) { char c = w[a]; for (int b = 0; b < 5; b++) { if (a != b) fours[b] += c; } }
@@ -227,7 +258,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                 {
                     if (!p.Contains(b))
                     {
-                        if (_wordList.Contains(l + _alphabet[b] + r))
+                        if (_wordList.Contains(l + _ALPHABET[b] + r))
                         {
                             p.Add(b);
                         }
@@ -240,7 +271,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                 d = Rnd.Range(0, 26);
             } while (p.Contains(d));
             p.Add(d);
-            chars[y[j]] = _alphabet[p.PickRandom()];
+            chars[y[j]] = _ALPHABET[p.PickRandom()];
         }
 
         return chars.Join("");
