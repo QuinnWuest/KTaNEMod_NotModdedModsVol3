@@ -11,6 +11,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     public KMBombModule Module;
     public KMBombInfo BombInfo;
     public KMAudio Audio;
+    public KMRuleSeedable RuleSeedable;
 
     public TextMesh[] ButtonTexts;
     public KMSelectable[] ButtonSels;
@@ -19,14 +20,14 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     private static int _moduleIdCounter = 1;
     private bool _moduleSolved;
 
-    private static readonly char[] _charList = new char[]
+    private char[] _charList = new char[]
     {
         'Ϭ','Ѧ','Ѣ', 'Ͼ','æ','Ͽ', 'Ԇ','Ϙ','Җ',
         'Ϟ','¿','Ѯ', 'Ω','ټ','ƛ', '҂','Ѽ','Ѭ',
         '¶','★','Ҩ', 'ϗ','©','ψ', 'Ӭ','☆','Ҋ'
     };
 
-    private readonly Dictionary<Position, char> _keypadSymbols = new Dictionary<Position, char>()
+    private Dictionary<Position, char> _keypadSymbols = new Dictionary<Position, char>()
     {
         [new Position(0, 0, 0)] = 'Ϭ',
         [new Position(1, 0, 0)] = 'Ѧ',
@@ -59,6 +60,44 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         [new Position(2, 2, 2)] = 'Ҋ'
     };
 
+    //words deliberately chosen to cause potential ambiguity when full sequence of letters is read; derived from _Password_'s word list
+    private string[] _wordBank = new string[] {
+        "abbot", "abort", "about", "abuts", "after", "again", "aging", "alter", "apace", "argue", "aster", "barge", "beery",
+        "below", "bight", "blare", "blown", "blows", "blowy", "bound", "bouts", "cater", "chink", "chose", "clean", "clear",
+        "cloud", "colds", "could", "douse", "earns", "eater", "egret", "eight", "elbow", "emery", "ether", "every", "fairs",
+        "fever", "fight", "fires", "firms", "first", "firth", "fists", "flare", "flirt", "foist", "found", "fount", "frond",
+        "frost", "funds", "gains", "glace", "glare", "glean", "graft", "grain", "grant", "grate", "great", "greet", "hater",
+        "heirs", "hinge", "hitch", "horse", "hosed", "hoses", "hound", "hours", "house", "hying", "joint", "laced", "laces",
+        "lager", "lance", "large", "largo", "later", "leans", "leant", "learn", "leery", "lever", "light", "louse", "malls",
+        "marge", "might", "mould", "mound", "mouse", "nerve", "never", "newer", "night", "ocher", "other", "otter", "outer",
+        "paced", "paces", "pacey", "pagan", "paint", "panto", "pants", "pater", "peace", "pinto", "pints", "place", "plain",
+        "plait", "plane", "plank", "plans", "plant", "plate", "pleat", "point", "posit", "pound", "print", "react", "resat",
+        "right", "rites", "round", "rouse", "safer", "sally", "sarge", "scold", "sells", "sever", "shall", "shell", "shill",
+        "sight", "sills", "silly", "skill", "slant", "small", "smell", "sneer", "sound", "souse", "space", "spell", "spelt",
+        "spiel", "spill", "splat", "stall", "stile", "still", "stilt", "sting", "stink", "studs", "study", "sudsy", "swell",
+        "swill", "sword", "tater", "tease", "tense", "terse", "thank", "their", "theme", "there", "therm", "these", "thick",
+        "thigh", "thine", "thing", "think", "thins", "third", "thong", "those", "three", "threw", "tight", "tills", "tinge",
+        "treat", "treed", "trees", "trill", "trite", "twill", "tying", "voter", "wader", "wafer", "wager", "waste", "water",
+        "waver", "wheel", "where", "which", "white", "whore", "whorl", "whose", "winch", "witch", "wolds", "words", "wordy",
+        "world", "would", "wound", "wrist", "write", "writs", "wrote", "yearn"
+    };
+    private readonly string _alphabet = "abcdefghijklmnopqrstuvwxyz";
+    private int _northButton;
+
+    private readonly int[][] _semaphore =
+    {
+        new int[] { 4, 5 }, new int[] { 4, 6 }, new int[] { 4, 7 }, new int[] { 0, 4 }, new int[] { 1, 4 }, 
+        new int[] { 2, 4 }, new int[] { 3, 4 }, new int[] { 5, 6 }, new int[] { 5, 7 }, new int[] { 0, 2 }, 
+        new int[] { 0, 5 }, new int[] { 1, 5 }, new int[] { 2, 5 }, new int[] { 3, 5 }, new int[] { 6, 7 }, 
+        new int[] { 0, 6 }, new int[] { 1, 6 }, new int[] { 2, 6 }, new int[] { 3, 6 }, new int[] { 0, 7 }, 
+        new int[] { 1, 7 }, new int[] { 0, 3 }, new int[] { 1, 2 }, new int[] { 1, 3 }, new int[] { 2, 7 }, new int[] { 2, 3 }
+    };
+
+    private readonly int[][] _initialSets =
+    {
+        new int[] { 0, 1, 6 }, new int[] { 0, 2, 5 }, new int[] { 0, 1, 5 }, new int[] { 0, 1, 2 }, new int[] { 0, 1, 4 }, new int[] { 0, 2, 4 }, new int[] { 0, 1, 3 }
+    };
+    
     private Position[] _positions;
     private Position[] _randomizedPositions;
     private char[] _buttonChars;
@@ -79,19 +118,32 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             ButtonSels[i].OnHighlightEnded += ButtonHighlightEnded(i);
         }
 
+        var ruleseed = RuleSeedable.GetRNG();
+
         _positions = GeneratePositions();
         _randomizedPositions = _positions.ToArray().Shuffle();
         _buttonChars = _randomizedPositions.Select(i => _keypadSymbols[i]).ToArray();
         for (int i = 0; i < _buttonChars.Length; i++)
             ButtonTexts[i].text = _buttonChars[i].ToString();
-        Debug.LogFormat("[Not Round Keypad #{0}] Generated keypad symbols: {1}", _moduleId, _buttonChars.Join(", "));
+        Debug.LogFormat("[Not Round Keypad #{0}] Keypad symbols: {1}", _moduleId, _buttonChars.Join(", "));
 
         _positionsPartOfSet = _positions.Take(3).ToArray();
         _positionsNotPartOfSet = _positions.Skip(3).ToArray();
         _buttonsPartOfSet = Enumerable.Range(0, 8).Where(i => _positionsPartOfSet.Contains(_randomizedPositions[i])).ToArray();
         _buttonsNotPartOfSet = Enumerable.Range(0, 8).Except(_buttonsPartOfSet).ToArray();
 
-        // do the rest
+        var _shuffledBank = ruleseed.ShuffleFisherYates(_wordBank);
+        int _chosenIndex = Rnd.Range(0, 208);
+        string _chosenWord = _shuffledBank[_chosenIndex];
+        
+        string _allLetters = ObtainAllLetters(_chosenWord, _buttonsNotPartOfSet, _buttonsPartOfSet);
+        _northButton = Rnd.Range(1, 8);
+        var _initSet = _initialSets[_northButton - 1];
+        int _rotate = _chosenIndex % 8;
+        int _startingSymbol = _chosenIndex / 8;
+        var _finalSet = new int[] { (_initSet[0] + _rotate) % 8, (_initSet[1] + _rotate) % 8, (_initSet[2] + _rotate) % 8 };
+    
+        
     }
 
     private KMSelectable.OnInteractHandler ButtonPress(int i)
@@ -129,6 +181,60 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
             // do code here
         };
+    }
+
+    private string ObtainAllLetters(string w, int[] n, int[] y)
+    {
+        char[] chars = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+        for (int i = 0; i < 5; i++)
+        {
+            chars[n[i]] = w[i];
+        }
+
+        //how not to code
+        //string[] fours = { "", "", "", "", "" }; for (int a = 0; a < 5; a++) { char c = w[a]; for (int b = 0; b < 5; b++) { if (a != b) fours[b] += c; } }
+
+        for (int j = 0; j < 3; j++)
+        {
+            List<int> p = new List<int>();
+            for (int f = 0; f < 5; f++)
+            {
+                string l = "";
+                string r = "";
+                for (int h = 0; h < 5; h++)
+                {
+                    if (f != h)
+                    {
+                        if (n[h] < y[j])
+                        {
+                            l += w[h];
+                        } else
+                        {
+                            r += w[h];
+                        }   
+                    }
+                }
+                for (int b = 0; b < 26; b++)
+                {
+                    if (!p.Contains(b))
+                    {
+                        if (_wordList.Contains(l + _alphabet[b] + r))
+                        {
+                            p.Add(b);
+                        }
+                    }
+                }
+            }
+            int d = -1;
+            do
+            {
+                d = Rnd.Range(0, 26);
+            } while (p.Contains(d));
+            p.Add(d);
+            chars[y[j]] = _alphabet[p.PickRandom()];
+        }
+
+        return chars.Join("");
     }
 
     private Position[] GeneratePositions()
