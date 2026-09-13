@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 public partial class NotRoundKeypadScript
 {
@@ -36,6 +37,18 @@ public partial class NotRoundKeypadScript
         public override int GetHashCode()
         {
             return X + Y * 3 + Z * 9;
+        }
+
+        public bool SharesTwoAxes(Position other)
+        {
+            int matches = 0;
+            if (other.X == X)
+                matches++;
+            if (other.Y == Y)
+                matches++;
+            if (other.Z == Z)
+                matches++;
+            return matches >= 2;
         }
     }
 }
