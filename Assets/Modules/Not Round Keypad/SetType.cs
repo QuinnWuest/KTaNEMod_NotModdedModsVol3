@@ -2,9 +2,9 @@
 {
     public enum SetType
     {
-        SameXAxis,
+        Cube,
         SameYAxis,
         SameZAxis,
-        Cube
+        SameXAxis
     }
 }
