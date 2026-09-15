@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using UnityEngine.Video;
 using Rnd = UnityEngine.Random;
 
 public partial class NotRoundKeypadScript : MonoBehaviour
@@ -105,6 +104,14 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     private TunnelPosition _currentTunnelPosition;
     private TunnelPosition _goalTunnelPosition;
 
+    private static readonly string[] _setTypeStrs = new string[4]
+    {
+        "took up the full cube's volume",
+        "all shared an Y axis in common",
+        "all shared an Z axis in common",
+        "all shared an X axis in common",
+    };
+
     private void Start()
     {
         // more general TODO: apparently underscores everywhere doesn't quite emulate your coding style Quinn, fix how you see fit
@@ -165,9 +172,11 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             _ledPairs[b] = new int[] { (sem[0] + _northButton) % 8, (sem[1] + _northButton) % 8 };
             Debug.LogFormat("[Not Round Keypad #{0}] ♦ The {1} button's LEDs: {2}, {3}", _moduleId, _directions[b], _directions[_ledPairs[b][0]], _directions[_ledPairs[b][1]]);
         }
-        Debug.LogFormat("[Not Round Keypad #{0}] The true north direction is oriented from the {1} button.", _moduleId, _directionNames[_northButton]);
         Debug.LogFormat("[Not Round Keypad #{0}] The SET symbols are: {1}, {2}, {3}", _moduleId, _buttonChars[_buttonsPartOfSet[0]], _buttonChars[_buttonsPartOfSet[1]], _buttonChars[_buttonsPartOfSet[2]]);
-        Debug.LogFormat("[Not Round Keypad #{0}] The non-SET buttons spell out '{1}'", _moduleId, chosenWord);
+        Debug.LogFormat("[Not Round Keypad #{0}] The symbols of the SET {1}.", _moduleId, _setTypeStrs[(int)_setType]);
+
+        Debug.LogFormat("[Not Round Keypad #{0}] The true north direction is oriented from the {1} button.", _moduleId, _directionNames[_northButton]);
+        Debug.LogFormat("[Not Round Keypad #{0}] The semaphore of the non-SET buttons (with {1} being reoriented as North) spell out '{2}'.", _moduleId, _directionNames[_northButton], chosenWord);
         Debug.LogFormat("<Not Round Keypad #{0}> All letters: {1}", _moduleId, _allLetters);
 
         var initSet = _initialSets[_northButton - 1];
@@ -175,7 +184,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         int rotate = chosenIndex % 8;
         int startingSymbolIx = chosenIndex / 8;
         SetPositionInfo startingPosition = new SetPositionInfo(startingSymbolIx % 3, (startingSymbolIx / 3) % 3, (startingSymbolIx / 9) % 3);
-        Debug.LogFormat("[Not Round Keypad #{0}] The starting symbol is {1}", _moduleId, _charArr[startingSymbolIx]);
+        // Debug.LogFormat("[Not Round Keypad #{0}] The starting keypad symbol is {1}.", _moduleId, _charArr[startingSymbolIx]);
         var finalSet = new int[] { (initSet[0] + rotate) % 8, (initSet[1] + rotate) % 8, (initSet[2] + rotate) % 8 };
         Debug.LogFormat("[Not Round Keypad #{0}] The final button set is {1}, {2}, {3}", _moduleId, _directions[finalSet[0]], _directions[finalSet[1]], _directions[finalSet[2]]);
 
@@ -205,8 +214,8 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         int goalIx = Array.IndexOf(_charArr, _buttonChars[_northButton]);
         _goalTunnelPosition = new TunnelPosition(x: goalIx % 3, y: (goalIx / 3) % 3, z: (goalIx / 9) % 3, kps: _buttonChars[_northButton]);
 
-        Debug.LogFormat("[Not Round Keypad #{0}] Starting position: {1}", _moduleId, _startingTunnelPosition.ToStringCurrent());
-        Debug.LogFormat("[Not Round Keypad #{0}] Goal position: {1}", _moduleId, _goalTunnelPosition.ToStringGoal());
+        Debug.LogFormat("[Not Round Keypad #{0}] Starting position: {1}", _moduleId, _startingTunnelPosition.ToStringWithWalls());
+        Debug.LogFormat("[Not Round Keypad #{0}] Goal position: {1}", _moduleId, _goalTunnelPosition.ToStringWithoutWalls());
 
         ResetToStartingPosition();
     }
@@ -235,16 +244,18 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                 {
                     Debug.LogFormat("Not Round Keypad {0}] However, this movement results in crashing into a wall. Strike. Resetting to starting position.", _moduleId);
                     ResetToStartingPosition();
+                    for (int b = 0; b < 8; b++)
+                        ButtonLEDs[b].GetComponent<MeshRenderer>().material = ButtonLEDMats[2];
                     Module.HandleStrike();
                     return false;
                 }
                 _currentTunnelPosition.KeypadSymbol = _keypadSymbolDict[new SetPositionInfo(_currentTunnelPosition.X.Value, _currentTunnelPosition.Y.Value, _currentTunnelPosition.Z.Value)];
-                Debug.LogFormat("[Not Round Keypad #{0}] Current position: {1}", _moduleId, _currentTunnelPosition.ToStringCurrent());
+                Debug.LogFormat("[Not Round Keypad #{0}] Current position: {1}", _moduleId, _currentTunnelPosition.ToStringWithWalls());
             }
             else
             {
                 SetType setTypePressed = (SetType)(i / 2);
-                Debug.LogFormat("[Not Round Keypad #{0}] Attempted to submit using the {1} button.", _moduleId, _directionNames[i]);
+                Debug.LogFormat("[Not Round Keypad #{0}] Attempted to submit using the {1} button, indicating that the SET {2}.", _moduleId, _directionNames[i], _setTypeStrs[(int)setTypePressed]);
 
                 bool sameSetType = _setType == setTypePressed;
                 bool samePosition = _currentTunnelPosition.Equals(_goalTunnelPosition);
@@ -304,9 +315,6 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         char[] chars = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
         for (int i = 0; i < 5; i++)
             chars[n[i]] = w[i];
-
-        //how not to code
-        //string[] fours = { "", "", "", "", "" }; for (int a = 0; a < 5; a++) { char c = w[a]; for (int b = 0; b < 5; b++) { if (a != b) fours[b] += c; } }
 
         for (int j = 0; j < 3; j++)
         {

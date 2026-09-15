@@ -106,14 +106,14 @@ public partial class NotRoundKeypadScript
             return true;
         }
 
-        public string ToStringCurrent()
+        public string ToStringWithWalls()
         {
-            return string.Format("({0}, {1}, {2}). Keypad symbol is {3}. Facing wall {4}. Above wall is wall {5}", X, Y, Z, KeypadSymbol, FacingWall, UpWall);
+            return string.Format("{3}. Facing wall {4}. Above wall is wall {5}.", X, Y, Z, KeypadSymbol, FacingWall, UpWall);
         }
 
-        public string ToStringGoal()
+        public string ToStringWithoutWalls()
         {
-            return string.Format("({0}, {1}, {2}). Keypad symbol is {3}.", X, Y, Z, KeypadSymbol);
+            return string.Format("{3}.", X, Y, Z, KeypadSymbol);
         }
     }
 }
