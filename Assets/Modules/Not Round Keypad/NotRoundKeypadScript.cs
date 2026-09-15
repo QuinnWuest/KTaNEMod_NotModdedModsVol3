@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using Rnd = UnityEngine.Random;
 
@@ -32,30 +31,38 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
     //words deliberately chosen to cause potential ambiguity when full sequence of letters is read; derived from _Password_'s word list
     private static readonly string[] _fullWordBank = new string[] {
-        "abbot", "abort", "about", "abuts", "after", "again", "aging", "alter", "apace", "argue", "aster", "barge", "beery",
-        "below", "bight", "blare", "blown", "blows", "blowy", "bound", "bouts", "cater", "chink", "chose", "clean", "clear",
-        "cloud", "colds", "could", "douse", "earns", "eater", "egret", "eight", "elbow", "emery", "ether", "every", "fairs",
-        "fever", "fight", "fires", "firms", "first", "firth", "fists", "flare", "flirt", "foist", "found", "fount", "frond",
-        "frost", "funds", "gains", "glace", "glare", "glean", "graft", "grain", "grant", "grate", "great", "greet", "hater",
-        "heirs", "hinge", "hitch", "horse", "hosed", "hoses", "hound", "hours", "house", "hying", "joint", "laced", "laces",
-        "lager", "lance", "large", "largo", "later", "leans", "leant", "learn", "leery", "lever", "light", "louse", "malls",
-        "marge", "might", "mould", "mound", "mouse", "nerve", "never", "newer", "night", "ocher", "other", "otter", "outer",
-        "paced", "paces", "pacey", "pagan", "paint", "panto", "pants", "pater", "peace", "pinto", "pints", "place", "plain",
-        "plait", "plane", "plank", "plans", "plant", "plate", "pleat", "point", "posit", "pound", "print", "react", "resat",
-        "right", "rites", "round", "rouse", "safer", "sally", "sarge", "scold", "sells", "sever", "shall", "shell", "shill",
-        "sight", "sills", "silly", "skill", "slant", "small", "smell", "sneer", "sound", "souse", "space", "spell", "spelt",
-        "spiel", "spill", "splat", "stall", "stile", "still", "stilt", "sting", "stink", "studs", "study", "sudsy", "swell",
-        "swill", "sword", "tater", "tease", "tense", "terse", "thank", "their", "theme", "there", "therm", "these", "thick",
-        "thigh", "thine", "thing", "think", "thins", "third", "thong", "those", "three", "threw", "tight", "tills", "tinge",
-        "treat", "treed", "trees", "trill", "trite", "twill", "tying", "voter", "wader", "wafer", "wager", "waste", "water",
-        "waver", "wheel", "where", "which", "white", "whore", "whorl", "whose", "winch", "witch", "wolds", "words", "wordy",
-        "world", "would", "wound", "wrist", "write", "writs", "wrote", "yearn"
+        "ABBOT", "ABORT", "ABOUT", "ABUTS", "AFTER", "AGAIN", "AGING", "ALTER", "APACE", "ARGUE", "ASTER", "BARGE", "BEERY",
+        "BELOW", "BIGHT", "BLARE", "BLOWN", "BLOWS", "BLOWY", "BOUND", "BOUTS", "CATER", "CHINK", "CHOSE", "CLEAN", "CLEAR",
+        "CLOUD", "COLDS", "COULD", "DOUSE", "EARNS", "EATER", "EGRET", "EIGHT", "ELBOW", "EMERY", "ETHER", "EVERY", "FAIRS",
+        "FEVER", "FIGHT", "FIRES", "FIRMS", "FIRST", "FIRTH", "FISTS", "FLARE", "FLIRT", "FOIST", "FOUND", "FOUNT", "FROND",
+        "FROST", "FUNDS", "GAINS", "GLACE", "GLARE", "GLEAN", "GRAFT", "GRAIN", "GRANT", "GRATE", "GREAT", "GREET", "HATER",
+        "HEIRS", "HINGE", "HITCH", "HORSE", "HOSED", "HOSES", "HOUND", "HOURS", "HOUSE", "HYING", "JOINT", "LACED", "LACES",
+        "LAGER", "LANCE", "LARGE", "LARGO", "LATER", "LEANS", "LEANT", "LEARN", "LEERY", "LEVER", "LIGHT", "LOUSE", "MALLS",
+        "MARGE", "MIGHT", "MOULD", "MOUND", "MOUSE", "NERVE", "NEVER", "NEWER", "NIGHT", "OCHER", "OTHER", "OTTER", "OUTER",
+        "PACED", "PACES", "PACEY", "PAGAN", "PAINT", "PANTO", "PANTS", "PATER", "PEACE", "PINTO", "PINTS", "PLACE", "PLAIN",
+        "PLAIT", "PLANE", "PLANK", "PLANS", "PLANT", "PLATE", "PLEAT", "POINT", "POSIT", "POUND", "PRINT", "REACT", "RESAT",
+        "RIGHT", "RITES", "ROUND", "ROUSE", "SAFER", "SALLY", "SARGE", "SCOLD", "SELLS", "SEVER", "SHALL", "SHELL", "SHILL",
+        "SIGHT", "SILLS", "SILLY", "SKILL", "SLANT", "SMALL", "SMELL", "SNEER", "SOUND", "SOUSE", "SPACE", "SPELL", "SPELT",
+        "SPIEL", "SPILL", "SPLAT", "STALL", "STILE", "STILL", "STILT", "STING", "STINK", "STUDS", "STUDY", "SUDSY", "SWELL",
+        "SWILL", "SWORD", "TATER", "TEASE", "TENSE", "TERSE", "THANK", "THEIR", "THEME", "THERE", "THERM", "THESE", "THICK",
+        "THIGH", "THINE", "THING", "THINK", "THINS", "THIRD", "THONG", "THOSE", "THREE", "THREW", "TIGHT", "TILLS", "TINGE",
+        "TREAT", "TREED", "TREES", "TRILL", "TRITE", "TWILL", "TYING", "VOTER", "WADER", "WAFER", "WAGER", "WASTE", "WATER",
+        "WAVER", "WHEEL", "WHERE", "WHICH", "WHITE", "WHORE", "WHORL", "WHOSE", "WINCH", "WITCH", "WOLDS", "WORDS", "WORDY",
+        "WORLD", "WOULD", "WOUND", "WRIST", "WRITE", "WRITS", "WROTE", "YEARN"
     };
     private string[] _wordBank;
 
-    private readonly string _alphabet = "abcdefghijklmnopqrstuvwxyz";
+    private readonly string _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private readonly string[] _directions = new string[] { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
-    private readonly string[] _directionNames = new string[] { "North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West" };
+    private readonly string[] _directionNames = new string[] { "NORTH", "NORTH-EAST", "EAST", "SOUTH-EAST", "SOUTH", "SOUTH-WEST", "WEST", "NORTH-WEST" };
+    private static readonly string[] _setTypeStrs = new string[4]
+    {
+        "took up the full cube's volume",
+        "all shared an Y axis in common",
+        "all shared an Z axis in common",
+        "all shared an X axis in common",
+    };
+
     private int _northButton;
 
     private static readonly TunnelPosition[] _startingTunnelPositions = new TunnelPosition[]
@@ -95,7 +102,6 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     private char[] _buttonChars;
 
     private SetPositionInfo[] _positionsPartOfSet;
-    private SetPositionInfo[] _positionsNotPartOfSet;
     private int[] _buttonsPartOfSet;
     private int[] _buttonsNotPartOfSet;
 
@@ -103,14 +109,6 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     private TunnelPosition _startingTunnelPosition;
     private TunnelPosition _currentTunnelPosition;
     private TunnelPosition _goalTunnelPosition;
-
-    private static readonly string[] _setTypeStrs = new string[4]
-    {
-        "took up the full cube's volume",
-        "all shared an Y axis in common",
-        "all shared an Z axis in common",
-        "all shared an X axis in common",
-    };
 
     private void Start()
     {
@@ -157,7 +155,6 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         Debug.LogFormat("[Not Round Keypad #{0}] Keypad symbols: {1}", _moduleId, _buttonChars.Join(", "));
 
         _positionsPartOfSet = _positions.Take(3).ToArray();
-        _positionsNotPartOfSet = _positions.Skip(3).ToArray();
         _buttonsPartOfSet = Enumerable.Range(0, 8).Where(i => _positionsPartOfSet.Contains(_randomizedPositions[i])).ToArray();
         _buttonsNotPartOfSet = Enumerable.Range(0, 8).Except(_buttonsPartOfSet).ToArray();
 
@@ -175,18 +172,18 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         Debug.LogFormat("[Not Round Keypad #{0}] The SET symbols are: {1}, {2}, {3}", _moduleId, _buttonChars[_buttonsPartOfSet[0]], _buttonChars[_buttonsPartOfSet[1]], _buttonChars[_buttonsPartOfSet[2]]);
         Debug.LogFormat("[Not Round Keypad #{0}] The symbols of the SET {1}.", _moduleId, _setTypeStrs[(int)_setType]);
 
-        Debug.LogFormat("[Not Round Keypad #{0}] The true north direction is oriented from the {1} button.", _moduleId, _directionNames[_northButton]);
-        Debug.LogFormat("[Not Round Keypad #{0}] The semaphore of the non-SET buttons (with {1} being reoriented as North) spell out '{2}'.", _moduleId, _directionNames[_northButton], chosenWord);
+        Debug.LogFormat("[Not Round Keypad #{0}] The true North direction is oriented from the {1} button.", _moduleId, _directionNames[_northButton]);
+        Debug.LogFormat("[Not Round Keypad #{0}] The semaphore of the non-SET buttons (with {1} being reoriented as North) spell out \"{2}\".", _moduleId, _directionNames[_northButton], chosenWord);
         Debug.LogFormat("<Not Round Keypad #{0}> All letters: {1}", _moduleId, _allLetters);
 
         var initSet = _initialSets[_northButton - 1];
-        Debug.LogFormat("[Not Round Keypad #{0}] The initial button set is {1}, {2}, {3}", _moduleId, _directions[initSet[0]], _directions[initSet[1]], _directions[initSet[2]]);
+        Debug.LogFormat("[Not Round Keypad #{0}] The initial button set is {1}, {2}, {3}.", _moduleId, _directions[initSet[0]], _directions[initSet[1]], _directions[initSet[2]]);
         int rotate = chosenIndex % 8;
         int startingSymbolIx = chosenIndex / 8;
         SetPositionInfo startingPosition = new SetPositionInfo(startingSymbolIx % 3, (startingSymbolIx / 3) % 3, (startingSymbolIx / 9) % 3);
         // Debug.LogFormat("[Not Round Keypad #{0}] The starting keypad symbol is {1}.", _moduleId, _charArr[startingSymbolIx]);
         var finalSet = new int[] { (initSet[0] + rotate) % 8, (initSet[1] + rotate) % 8, (initSet[2] + rotate) % 8 };
-        Debug.LogFormat("[Not Round Keypad #{0}] The final button set is {1}, {2}, {3}", _moduleId, _directions[finalSet[0]], _directions[finalSet[1]], _directions[finalSet[2]]);
+        Debug.LogFormat("[Not Round Keypad #{0}] The final button set is {1}, {2}, {3}.", _moduleId, _directions[finalSet[0]], _directions[finalSet[1]], _directions[finalSet[2]]);
 
         var distinctLights = new List<int>();
         for (int f = 0; f < 3; f++)
@@ -197,18 +194,15 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                     distinctLights.Add(pair[p]);
         }
         int distinctTotal = distinctLights.Count() - (distinctLights.Contains(_northButton) ? 1 : 0);
-        Debug.LogFormat("[Not Round Keypad #{0}] The number of distinct light positions from the final set, ignoring the north button, is {1}", _moduleId, distinctTotal);
+        Debug.LogFormat("[Not Round Keypad #{0}] The number of distinct light positions from the final set, ignoring the north button, is {1}.", _moduleId, distinctTotal);
         var distances = finalSet.Select(z => _semaphoreDistances[_alphabet.IndexOf(_allLetters[z])]).ToArray();
         Array.Sort(distances);
         int medianDistance = distances[1];
         Debug.LogFormat("[Not Round Keypad #{0}] The median distance between lights from the final set is {1}.", _moduleId, medianDistance);
-        Debug.LogFormat("<Not Round Keypad #{0}> All distances: {1}", _moduleId, distances.Join());
+        Debug.LogFormat("<Not Round Keypad #{0}> All distances: {1}.", _moduleId, distances.Join());
 
-        _startingTunnelPosition = _startingTunnelPositions[medianDistance];
-        _startingTunnelPosition.X = startingPosition.X;
-        _startingTunnelPosition.Y = startingPosition.Y;
-        _startingTunnelPosition.Z = startingPosition.Z;
-        _startingTunnelPosition.KeypadSymbol = _charArr[startingSymbolIx];
+        var startingOrientation = _startingTunnelPositions[medianDistance - 1];
+        _startingTunnelPosition = new TunnelPosition(x: startingPosition.X, y: startingPosition.Y, z: startingPosition.Z, facingWall: startingOrientation.FacingWall, upWall: startingOrientation.UpWall, rightWall: startingOrientation.RightWall, kps: _charArr[startingSymbolIx]);
         for (int cwRots = 0; cwRots < distinctTotal; cwRots++)
             _startingTunnelPosition = TunnelPosition.ApplyMovement(_startingTunnelPosition, TunnelDirection.Clockwise);
         int goalIx = Array.IndexOf(_charArr, _buttonChars[_northButton]);
@@ -238,11 +232,11 @@ public partial class NotRoundKeypadScript : MonoBehaviour
             if (modulo == 0)
             {
                 TunnelDirection dirPressed = (TunnelDirection)(i / 2);
-                Debug.LogFormat("[Not Round Keypad #{0}] Pressed the {1} button to go {2}.", _moduleId, _directionNames[i], dirPressed.ToString().ToUpperInvariant());
+                Debug.LogFormat("[Not Round Keypad #{0}] Pressed {1} button to go {2}.", _moduleId, _directionNames[i], dirPressed.ToString().ToUpperInvariant());
                 _currentTunnelPosition = TunnelPosition.ApplyMovement(_currentTunnelPosition, dirPressed);
                 if (!_currentTunnelPosition.IsValidTunnelPosition())
                 {
-                    Debug.LogFormat("Not Round Keypad {0}] However, this movement results in crashing into a wall. Strike. Resetting to starting position.", _moduleId);
+                    Debug.LogFormat("[Not Round Keypad {0}] However, this movement results in crashing into a wall. Strike. Resetting to starting position.", _moduleId);
                     ResetToStartingPosition();
                     for (int b = 0; b < 8; b++)
                         ButtonLEDs[b].GetComponent<MeshRenderer>().material = ButtonLEDMats[2];
@@ -424,12 +418,177 @@ public partial class NotRoundKeypadScript : MonoBehaviour
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        command = Regex.Replace(command.ToLowerInvariant().Trim(), @"^\s+", " ");
-        yield break;
+        command = command.Trim().ToLowerInvariant();
+        var parameters = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        var list = new List<int>();
+        if (parameters.Length < 2)
+            yield break;
+
+        for (int i = 1; i < parameters.Length; i++)
+        {
+            switch (parameters[i])
+            {
+                case "up":
+                case "u":
+                case "north":
+                case "n":
+                case "1":
+                    list.Add(0);
+                    break;
+                case "upright":
+                case "ur":
+                case "northeast":
+                case "ne":
+                case "2":
+                    list.Add(1);
+                    break;
+                case "right":
+                case "r":
+                case "east":
+                case "e":
+                case "3":
+                    list.Add(2);
+                    break;
+                case "upleft":
+                case "ul":
+                case "northwest":
+                case "nw":
+                case "4":
+                    list.Add(3);
+                    break;
+                case "down":
+                case "d":
+                case "south":
+                case "s":
+                case "5":
+                    list.Add(4);
+                    break;
+                case "downright":
+                case "dr":
+                case "southeast":
+                case "se":
+                case "6":
+                    list.Add(5);
+                    break;
+                case "left":
+                case "l":
+                case "west":
+                case "w":
+                case "7":
+                    list.Add(6);
+                    break;
+                case "downleft":
+                case "dl":
+                case "southwest":
+                case "sw":
+                case "8":
+                    list.Add(7);
+                    break;
+                default:
+                    yield break;
+            }
+        }
+        switch (parameters[0])
+        {
+            case "move":
+                if (list.Any(btn => btn % 2 != 0))
+                {
+                    yield return "sendtochaterror You cannot move diagonally. Command ignored.";
+                    yield break;
+                }
+                foreach (var btn in list)
+                {
+                    ButtonSels[btn].OnInteract();
+                    yield return new WaitForSeconds(0.2f);
+                }
+                break;
+            case "submit":
+                if (list.Count != 1)
+                {
+                    yield return "sendtochaterror You cannot submit more than one button. Command ignored.";
+                    yield break;
+                }
+                if (list[0] % 2 == 0)
+                {
+                    yield return "sendtochaterror You cannot submit on a non-diagonal button. Command ignored.";
+                    yield break;
+                }
+                ButtonSels[list[0]].OnInteract();
+                break;
+            case "highlight":
+            case "hl":
+                foreach (var btn in list)
+                {
+                    ButtonSels[btn].OnHighlight();
+                    yield return new WaitForSeconds(1.25f);
+                    ButtonSels[btn].OnHighlightEnded();
+                    yield return new WaitForSeconds(0.25f);
+                }
+                break;
+            default:
+                yield break;
+        }
+    }
+
+    struct QueueItem
+    {
+        public TunnelPosition Position { get; private set; }
+        public TunnelPosition Parent { get; private set; }
+        public TunnelDirection Direction { get; private set; }
+
+        public QueueItem(TunnelPosition position, TunnelPosition parent, TunnelDirection direction)
+        {
+            Position = position;
+            Parent = parent;
+            Direction = direction;
+        }
     }
 
     private IEnumerator TwitchHandleForcedSolve()
     {
+        if (_currentTunnelPosition.Equals(_goalTunnelPosition))
+            goto found;
+        var visited = new Dictionary<TunnelPosition, QueueItem>();
+        var q = new Queue<QueueItem>();
+        q.Enqueue(new QueueItem(_currentTunnelPosition, null, TunnelDirection.Up));
+        while (q.Count > 0)
+        {
+            var qi = q.Dequeue();
+            if (visited.ContainsKey(qi.Position))
+                continue;
+            visited[qi.Position] = qi;
+            if (qi.Position.Equals(_goalTunnelPosition))
+                break;
+            var up = TunnelPosition.ApplyMovement(qi.Position, TunnelDirection.Up);
+            var right = TunnelPosition.ApplyMovement(qi.Position, TunnelDirection.Right);
+            var down = TunnelPosition.ApplyMovement(qi.Position, TunnelDirection.Down);
+            var left = TunnelPosition.ApplyMovement(qi.Position, TunnelDirection.Left);
+            if (up.IsValidTunnelPosition())
+                q.Enqueue(new QueueItem(up, qi.Position, TunnelDirection.Up));
+            if (right.IsValidTunnelPosition())
+                q.Enqueue(new QueueItem(right, qi.Position, TunnelDirection.Right));
+            if (down.IsValidTunnelPosition())
+                q.Enqueue(new QueueItem(down, qi.Position, TunnelDirection.Down));
+            if (left.IsValidTunnelPosition())
+                q.Enqueue(new QueueItem(left, qi.Position, TunnelDirection.Left));
+        }
+        var r = _goalTunnelPosition;
+        var path = new List<TunnelDirection>();
+        while (true)
+        {
+            var nr = visited[r];
+            if (nr.Parent == null)
+                break;
+            path.Add(nr.Direction);
+            r = nr.Parent;
+        }
+        for (int i = path.Count - 1; i >= 0; i--)
+        {
+            ButtonSels[(int)path[i] * 2].OnInteract();
+            yield return new WaitForSeconds(0.2f);
+        }
+        found:;
+        ButtonSels[(int)_setType * 2 + 1].OnInteract();
         yield break;
     }
 }
