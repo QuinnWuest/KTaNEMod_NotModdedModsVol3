@@ -784,9 +784,9 @@ public partial class NotLightCycleScript : MonoBehaviour
         if (m.Success)
         {
             yield return null;
-            ButtonSel.OnInteract();
+            yield return ButtonSel;
             yield return new WaitForSeconds(0.2f);
-            ButtonSel.OnInteractEnded();
+            yield return ButtonSel;
             yield break;
         }
         var cmds = command.Split(' ');
@@ -801,23 +801,30 @@ public partial class NotLightCycleScript : MonoBehaviour
                 yield break;
             cList.Add((HexColor)"bgmrwy".IndexOf(m.Groups["color"].Value[0]));
         }
+        if (cList.Count == 0)
+            yield break;
+
         yield return null;
         yield return "solve";
         yield return "strike";
-        ButtonSel.OnInteract();
-        while (!_buttonTimerTriggered)
-            yield return null;
+
+        if (!_inSubmissionMode)
+        {
+            yield return ButtonSel;
+            while (!_buttonTimerTriggered)
+                yield return null;
+        }
         foreach (var color in cList)
         {
             int ix = Array.IndexOf(_lightColors, color);
             while (_currentLightColorIx != ix)
                 yield return null;
-            if (_buttonHeld)
-                ButtonSel.OnInteractEnded();
-            else
-                ButtonSel.OnInteract();
+
+            yield return ButtonSel;
             yield return new WaitForSeconds(0.1f);
         }
+        if (_buttonHeld)
+            yield return ButtonSel;
     }
 
     private IEnumerator TwitchHandleForcedSolve()
