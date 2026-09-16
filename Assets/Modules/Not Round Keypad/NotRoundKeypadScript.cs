@@ -58,8 +58,8 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     private static readonly string[] _setTypeStrs = new string[4]
     {
         "took up the full cube's volume",
-        "all shared an Y axis in common",
         "all shared an Z axis in common",
+        "all shared an Y axis in common",
         "all shared an X axis in common",
     };
 

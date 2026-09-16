@@ -3,8 +3,8 @@
     public enum SetType
     {
         Cube,
-        SameYAxis,
         SameZAxis,
+        SameYAxis,
         SameXAxis
     }
 }
