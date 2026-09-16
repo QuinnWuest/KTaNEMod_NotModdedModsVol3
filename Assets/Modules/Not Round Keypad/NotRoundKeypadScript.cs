@@ -201,9 +201,9 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         Debug.LogFormat("[Not Round Keypad #{0}] The median distance between lights from the final set is {1}.", _moduleId, medianDistance);
         Debug.LogFormat("<Not Round Keypad #{0}> All distances: {1}.", _moduleId, distances.Join());
 
-        var startingOrientation = _startingTunnelPositions[medianDistance - 1];
+        var startingOrientation = _startingTunnelPositions[distinctTotal - 1];
         _startingTunnelPosition = new TunnelPosition(x: startingPosition.X, y: startingPosition.Y, z: startingPosition.Z, facingWall: startingOrientation.FacingWall, upWall: startingOrientation.UpWall, rightWall: startingOrientation.RightWall, kps: _charArr[startingSymbolIx]);
-        for (int cwRots = 0; cwRots < distinctTotal; cwRots++)
+        for (int cwRots = 0; cwRots < medianDistance; cwRots++)
             _startingTunnelPosition = TunnelPosition.ApplyMovement(_startingTunnelPosition, TunnelDirection.Clockwise);
         int goalIx = Array.IndexOf(_charArr, _buttonChars[_northButton]);
         _goalTunnelPosition = new TunnelPosition(x: goalIx % 3, y: (goalIx / 3) % 3, z: (goalIx / 9) % 3, kps: _buttonChars[_northButton]);
