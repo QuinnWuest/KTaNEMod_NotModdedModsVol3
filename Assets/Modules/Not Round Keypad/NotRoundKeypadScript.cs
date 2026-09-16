@@ -176,26 +176,26 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         Debug.LogFormat("[Not Round Keypad #{0}] The semaphore of the non-SET buttons (with {1} being reoriented as North) spell out \"{2}\".", _moduleId, _directionNames[_northButton], chosenWord);
         Debug.LogFormat("<Not Round Keypad #{0}> All letters: {1}", _moduleId, _allLetters);
 
-        var initSet = _initialSets[_northButton - 1];
-        Debug.LogFormat("[Not Round Keypad #{0}] The initial button set is {1}, {2}, {3}.", _moduleId, _directions[initSet[0]], _directions[initSet[1]], _directions[initSet[2]]);
+        var initTrio = _initialSets[_northButton - 1];
+        Debug.LogFormat("[Not Round Keypad #{0}] The initial button trio is {1}, {2}, {3}.", _moduleId, _directions[initTrio[0]], _directions[initTrio[1]], _directions[initTrio[2]]);
         int rotate = chosenIndex % 8;
         int startingSymbolIx = chosenIndex / 8;
         SetPositionInfo startingPosition = new SetPositionInfo(startingSymbolIx % 3, (startingSymbolIx / 3) % 3, (startingSymbolIx / 9) % 3);
         // Debug.LogFormat("[Not Round Keypad #{0}] The starting keypad symbol is {1}.", _moduleId, _charArr[startingSymbolIx]);
-        var finalSet = new int[] { (initSet[0] + rotate) % 8, (initSet[1] + rotate) % 8, (initSet[2] + rotate) % 8 };
-        Debug.LogFormat("[Not Round Keypad #{0}] The final button set is {1}, {2}, {3}.", _moduleId, _directions[finalSet[0]], _directions[finalSet[1]], _directions[finalSet[2]]);
+        var finalTrio = new int[] { (initTrio[0] + rotate) % 8, (initTrio[1] + rotate) % 8, (initTrio[2] + rotate) % 8 };
+        Debug.LogFormat("[Not Round Keypad #{0}] The final button trio is {1}, {2}, {3}.", _moduleId, _directions[finalTrio[0]], _directions[finalTrio[1]], _directions[finalTrio[2]]);
 
         var distinctLights = new List<int>();
         for (int f = 0; f < 3; f++)
         {
-            var pair = _ledPairs[finalSet[f]];
+            var pair = _ledPairs[finalTrio[f]];
             for (int p = 0; p < 2; p++)
                 if (!distinctLights.Contains(pair[p]))
                     distinctLights.Add(pair[p]);
         }
         int distinctTotal = distinctLights.Count() - (distinctLights.Contains(_northButton) ? 1 : 0);
         Debug.LogFormat("[Not Round Keypad #{0}] The number of distinct light positions from the final set, ignoring the north button, is {1}.", _moduleId, distinctTotal);
-        var distances = finalSet.Select(z => _semaphoreDistances[_alphabet.IndexOf(_allLetters[z])]).ToArray();
+        var distances = finalTrio.Select(z => _semaphoreDistances[_alphabet.IndexOf(_allLetters[z])]).ToArray();
         Array.Sort(distances);
         int medianDistance = distances[1];
         Debug.LogFormat("[Not Round Keypad #{0}] The median distance between lights from the final set is {1}.", _moduleId, medianDistance);
