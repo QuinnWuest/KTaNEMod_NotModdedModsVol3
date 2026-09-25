@@ -413,7 +413,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
     }
 
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = @"";
+    private readonly string TwitchHelpMessage = @"!{0} highlight 1 2 3 [Highlight the buttons.] | !{0} move up right down left [Move in a direction.] | !{0} submit southwest [Submit a diagonal button.] | Buttons can be pressed/highlighted using numbers (starting north, going clockwise), using directions (or their first letters), or cardinals (or using their single/double letter abbreviation.)";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
