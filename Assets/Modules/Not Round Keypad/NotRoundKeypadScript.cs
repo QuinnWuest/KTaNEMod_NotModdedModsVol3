@@ -236,7 +236,7 @@ public partial class NotRoundKeypadScript : MonoBehaviour
                 _currentTunnelPosition = TunnelPosition.ApplyMovement(_currentTunnelPosition, dirPressed);
                 if (!_currentTunnelPosition.IsValidTunnelPosition())
                 {
-                    Debug.LogFormat("[Not Round Keypad {0}] However, this movement results in crashing into a wall. Strike. Resetting to starting position.", _moduleId);
+                    Debug.LogFormat("[Not Round Keypad #{0}] However, this movement results in crashing into a wall. Strike. Resetting to starting position.", _moduleId);
                     ResetToStartingPosition();
                     for (int b = 0; b < 8; b++)
                         ButtonLEDs[b].GetComponent<MeshRenderer>().material = ButtonLEDMats[2];
