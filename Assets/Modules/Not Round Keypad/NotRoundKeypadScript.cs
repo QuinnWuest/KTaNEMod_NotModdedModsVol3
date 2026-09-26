@@ -70,9 +70,9 @@ public partial class NotRoundKeypadScript : MonoBehaviour
         new TunnelPosition(facingWall: 1, upWall: 2, rightWall: 3),
         new TunnelPosition(facingWall: 2, upWall: 3, rightWall: 1),
         new TunnelPosition(facingWall: 3, upWall: 1, rightWall: 2),
-        new TunnelPosition(facingWall: 4, upWall: 6, rightWall: 5),
-        new TunnelPosition(facingWall: 5, upWall: 4, rightWall: 6),
-        new TunnelPosition(facingWall: 6, upWall: 5, rightWall: 4),
+        new TunnelPosition(facingWall: 4, upWall: 6, rightWall: 2),
+        new TunnelPosition(facingWall: 5, upWall: 4, rightWall: 1),
+        new TunnelPosition(facingWall: 6, upWall: 5, rightWall: 3),
     };
 
     private readonly int[][] _semaphore =
