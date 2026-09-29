@@ -823,8 +823,6 @@ public partial class NotLightCycleScript : MonoBehaviour
             yield return ButtonSel;
             yield return new WaitForSeconds(0.1f);
         }
-        if (_buttonHeld)
-            yield return ButtonSel;
     }
 
     private IEnumerator TwitchHandleForcedSolve()
