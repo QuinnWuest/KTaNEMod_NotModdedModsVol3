@@ -127,9 +127,9 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
 
         _faceCurrentlyViewing = faceCurrentlyViewing;
         UpdateScreen();
-    }
+	}
 
-    private void UpdateScreen()
+	private void UpdateScreen()
     {
         var mappedFace = _diagramOrientation.MapFace(_faceCurrentlyViewing);
         ScreenText.text = _currentCubes[0].GetColourFromFace(mappedFace).ToString();
@@ -190,7 +190,8 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             Debug.LogFormat("[Perspecticolour Flash #{0}] Attempted to move the active cube from {1} to {2}. Strike.",
                 _moduleId, from, dest);
             Module.HandleStrike();
-            return;
+			StartCoroutine(RecenterModule());
+			return;
         }
 
         _currentCubes[0] = _cubeByCoord[next.A];
@@ -207,6 +208,7 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
             Debug.LogFormat("[Perspecticolour Flash #{0}] Cubes have reached the same position. Module solved.", _moduleId);
             _moduleSolved = true;
             Module.HandlePass();
+            StartCoroutine(RecenterModule());
         }
     }
 
@@ -331,21 +333,23 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
         yield return null;
         foreach (var tpcmd in tpCmds)
             yield return ExecuteTpCommand(tpcmd);
-        yield break;
+
+		yield return RecenterModule();
+		yield break;
     }
 
     private IEnumerator ExecuteTpCommand(TpCommand command)
     {
-        if (command.Face != CubeFace.TopFace)
-            yield return TiltModule(command.Face);
-        yield return new WaitForSeconds(0.1f);
-        yield return PressButton(command.Button);
-        yield return new WaitForSeconds(0.1f);
-        if (command.Face != CubeFace.TopFace)
-            yield return TiltModule(CubeFace.TopFace);
-    }
+        //in the event that the bomb is turned while the mod is tilting during the autosolver
+        while(_faceCurrentlyViewing != command.Face) {
+			yield return TiltModule(command.Face);
+			yield return new WaitForSeconds(0.1f);
+		}
 
-    private IEnumerator PressButton(KMSelectable button)
+		yield return PressButton(command.Button);
+	}
+
+	private IEnumerator PressButton(KMSelectable button)
     {
         button.OnInteract();
         yield return new WaitForSeconds(0.1f);
@@ -363,29 +367,63 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
 
     private IEnumerator TiltModule(CubeFace cubeFace)
     {
-        var rotStart = ModuleObj.transform.localEulerAngles;
+        var rotStart = ModuleObj.transform.rotation.eulerAngles;
         var rotEnd = _rotations[cubeFace];
 
-        if (rotStart.x - rotEnd.x > 180f)
-            rotEnd.x += 360f;
-        if (rotEnd.x - rotStart.x > 180f)
-            rotStart.x += 360f;
-        if (rotStart.z - rotEnd.z > 180f)
-            rotEnd.z += 360f;
-        if (rotEnd.z - rotStart.z > 180f)
-            rotStart.z += 360f;
-        var duration = 0.5f;
+        //the euler angles are slightly different in game
+        if(!Application.isEditor) rotEnd.x -= 90f;
+
+		if (rotStart.x - rotEnd.x > 180f) rotEnd.x += 360f;
+		if (rotEnd.x - rotStart.x > 180f) rotStart.x += 360f;
+
+		if (rotStart.y - rotEnd.y > 180f) rotEnd.y += 360f;
+		if (rotEnd.y - rotStart.y > 180f) rotStart.y += 360f;
+
+		if (rotStart.z - rotEnd.z > 180f) rotEnd.z += 360f;
+		if (rotEnd.z - rotStart.z > 180f) rotStart.z += 360f;
+
+		var duration = 0.5f;
         var elapsed = 0f;
-        while (elapsed < duration)
-        {
-            ModuleObj.transform.localEulerAngles = new Vector3(Easing.InOutQuad(elapsed, rotStart.x, rotEnd.x, duration), 0, Easing.InOutQuad(elapsed, rotStart.z, rotEnd.z, duration));
+
+        while (elapsed < duration) {
+			ModuleObj.transform.eulerAngles = new Vector3(
+	            Easing.InOutQuad(elapsed, rotStart.x, rotEnd.x, duration),
+	            Easing.InOutQuad(elapsed, rotStart.y, rotEnd.y, duration),
+	            Easing.InOutQuad(elapsed, rotStart.z, rotEnd.z, duration));
             yield return null;
             elapsed += Time.deltaTime;
         }
-        ModuleObj.transform.localEulerAngles = new Vector3(rotEnd.x, 0, rotEnd.z);
+        ModuleObj.transform.eulerAngles = new Vector3(rotEnd.x, rotEnd.y, rotEnd.z);
     }
 
-    private IEnumerator TwitchHandleForcedSolve()
+    //same thing as TiltModule(TopFace) but using local instead of global euler to recenter the mod with respect to the bomb
+    private IEnumerator RecenterModule() {
+		var rotStart = ModuleObj.transform.localEulerAngles;
+		var rotEnd = _rotations[CubeFace.TopFace];
+		if (rotStart.x - rotEnd.x > 180f) rotEnd.x += 360f;
+		if (rotEnd.x - rotStart.x > 180f) rotStart.x += 360f;
+
+		if (rotStart.y - rotEnd.y > 180f) rotEnd.y += 360f;
+		if (rotEnd.y - rotStart.y > 180f) rotStart.y += 360f;
+
+		if (rotStart.z - rotEnd.z > 180f) rotEnd.z += 360f;
+		if (rotEnd.z - rotStart.z > 180f) rotStart.z += 360f;
+
+		var duration = 0.5f;
+		var elapsed = 0f;
+
+		while (elapsed < duration) {
+			ModuleObj.transform.localEulerAngles = new Vector3(
+                Easing.InOutQuad(elapsed, rotStart.x, rotEnd.x, duration),
+				Easing.InOutQuad(elapsed, rotStart.y, rotEnd.y, duration),
+                Easing.InOutQuad(elapsed, rotStart.z, rotEnd.z, duration));
+			yield return null;
+			elapsed += Time.deltaTime;
+		}
+		ModuleObj.transform.localEulerAngles = new Vector3(rotEnd.x, rotEnd.y, rotEnd.z);
+	}
+
+	private IEnumerator TwitchHandleForcedSolve()
     {
         while (!_moduleSolved)
         {
@@ -401,6 +439,8 @@ public partial class PerspecticolourFlashScript : MonoBehaviour
                 yield return ExecuteTpCommand(new TpCommand(button, path[i].ViewFace));
             }
         }
+
+        yield return RecenterModule();
         yield break;
 
     }
