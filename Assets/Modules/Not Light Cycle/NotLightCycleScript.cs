@@ -783,10 +783,17 @@ public partial class NotLightCycleScript : MonoBehaviour
         var m = Regex.Match(command, @"^\s*(tap|next|continue)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         if (m.Success)
         {
+            if (_inSubmissionMode)
+            {
+                yield return "sendtochaterror You can't view the next tetrahex if you're already in submission mode! Command ignored.";
+                yield break;
+            }
             yield return null;
-            yield return ButtonSel;
+            if (_buttonHeld)
+                ButtonSel.OnInteractEnded();
+            ButtonSel.OnInteract();
             yield return new WaitForSeconds(0.2f);
-            yield return ButtonSel;
+            ButtonSel.OnInteractEnded();
             yield break;
         }
         var cmds = command.Split(' ');
@@ -807,12 +814,12 @@ public partial class NotLightCycleScript : MonoBehaviour
         yield return null;
         yield return "solve";
         yield return "strike";
-
         if (!_inSubmissionMode)
         {
-            yield return ButtonSel;
-            while (!_buttonTimerTriggered)
-                yield return null;
+            if (_buttonHeld)
+                ButtonSel.OnInteractEnded();
+            yield return null;
+            ButtonSel.OnInteract();
         }
         foreach (var color in cList)
         {
@@ -820,7 +827,11 @@ public partial class NotLightCycleScript : MonoBehaviour
             while (_currentLightColorIx != ix)
                 yield return null;
 
-            yield return ButtonSel;
+            if (!_buttonHeld)
+                ButtonSel.OnInteract();
+            else
+                ButtonSel.OnInteractEnded();
+
             yield return new WaitForSeconds(0.1f);
         }
     }
